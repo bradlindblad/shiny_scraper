@@ -24,9 +24,9 @@ get.data <- function(x){
 
 get.infoBox.val <- function(x){
   
-  df <- get.data()
-  df <- df$`% 1h`[1]
-  df
+  df1 <- get.data()
+  df1 <- df1$`% 1h`[1]
+  df1
   
 }
 
@@ -94,34 +94,31 @@ ui <- dashboardPage(
   
   fluidRow(
 
-    
+    column(
     # Datatable
-    box(
-      status = "primary",
-      headerPanel("Data Table"),
-      solidHeader = T,
-      br(),
-      DT::dataTableOutput("table"),
-      width = 6,
-      height = "560px"
+      box(
+        status = "primary",
+        headerPanel("Data Table"),
+        solidHeader = T,
+        br(),
+        DT::dataTableOutput("table", height = "400px"),
+        width = 6,
+        height = "560px"
+      ),
+      
+      # Chart
+      box(
+        status = "primary",
+        headerPanel("Chart"),
+        solidHeader = T,
+        br(),
+        plotOutput("plot", height = "400px"),
+        width = 6,
+        height = "500px"
+      ),
+      width = 12
     )
     
-    
-  ),
-  
-  fluidRow(
-    
-
-    # Chart
-    box(
-      status = "primary",
-      headerPanel("Chart"),
-      solidHeader = T,
-      br(),
-      plotOutput("plot"),
-      width = 6,
-      height = "500px"
-    )
   )
   )
   
@@ -161,7 +158,7 @@ server <- function(input, output) {
   output$top.coin <- renderInfoBox({
     infoBox(
       "Gain in Last Hour",
-      paste0(get.infoBox(), "%"),
+      paste0(get.infoBox.val(), "%"),
       icon = icon("signal"),
       color = "purple",
       fill = TRUE)
