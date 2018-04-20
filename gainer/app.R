@@ -1,5 +1,14 @@
+library(shiny)
+library(tidyverse)
+library(shinydashboard)
+library(rvest)
+
+#####################
+####### F N S #######
+#####################
+
 get.data <- function(x){
-  library(rvest)
+
   urlz <- read_html("https://coinmarketcap.com/gainers-losers/")
   urlz <- html_table(urlz)
   
@@ -13,55 +22,168 @@ get.data <- function(x){
   bra
 }
 
+get.infoBox.val <- function(x){
+  
+  df <- get.data()
+  df <- df$`% 1h`[1]
+  df
+  
+}
 
-library(shiny)
+get.infobox.coin <- function(x){
+  
+  df <- get.data()
+  df <- df$Name[1]
+  df
+  
+}
 
+#####################
+####### U I #########
+#####################
 
-# Define the UI
+ui <- dashboardPage(
+  
+  
+  # H E A D E R
+  
+  dashboardHeader(title = "Alt Coin Gainers"),
+  
+  # S I D E B A R
+  
+  dashboardSidebar(
+    
+    h5("A slightly interactive dashboard that pulls the top gainers from the last hour from
+       coinmarketcap.com"),
+    
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    br(),
+    
+    h6("Built by Brad Lindblad in the R computing language 
+      [  R Core Team (2018). R: A language and environment for statistical computing. R Foundation for Statistical Computing,
+  Vienna, Austria. URL https://www.R-project.org/]"),
+    br(),
+    h6("R version 3.4.4 (2018-03-15) 'Someone to Lean On'"),
+    br(),
+    a("bradley.lindblad@gmail.com", href="mailto:bradley.lindblad@gmail.com")
+    
+  ),
+  
+  # B O D Y
+  dashboardBody(
+    
+  fluidRow(
+    
+    # InfoBox
+    infoBoxOutput("top.coin",
+                  width = 3),
+    
+    # InfoBox
+    infoBoxOutput("top.name",
+                  width = 3)
+    
+  ),
+  
+  fluidRow(
 
-ui <- fluidPage(
+    
+    # Datatable
+    box(
+      status = "primary",
+      headerPanel("Data Table"),
+      solidHeader = T,
+      br(),
+      DT::dataTableOutput("table"),
+      width = 6,
+      height = "560px"
+    )
+    
+    
+  ),
   
-  titlePanel("1HR Gainers/Losers"),
-  
-  titlePanel("Brad did this; data refreshes every 60 sec"),
-  
-  fluidRow(DT::dataTableOutput("table")),
-  
-  fluidRow(plotOutput("plot"))
-  
+  fluidRow(
+    
+
+    # Chart
+    box(
+      status = "primary",
+      headerPanel("Chart"),
+      solidHeader = T,
+      br(),
+      plotOutput("plot"),
+      width = 6,
+      height = "500px"
+    )
+  )
+  )
   
 )
+  
+  
 
-library(ggplot2)
+#####################
+#### S E R V E R ####
+#####################
 
-# Define the server code
 server <- function(input, output) {
   
-  #############
-  
+
+  # R E A C T I V E 
   liveish_data <- reactive({
-    invalidateLater(60000)
-    get.data()
+    invalidateLater(60000)    # refresh the report every 60k milliseconds (60 seconds)
+    get.data()                # call our function from above
   })
   
   
-  #############
-  
-  
-  
-  
-  # Filter data based on selections
+  # D A T A   T A B L E   O U T P U T
   output$table <- DT::renderDataTable(DT::datatable({
     data <- liveish_data()}))
   
+  
+  # P L O T   O U T P U T
   output$plot <- renderPlot({ (ggplot(data=liveish_data(), aes(x=Symbol, y=`% 1h`)) +
                                  geom_bar(stat="identity") +
                                  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
                                  ggtitle("Gainers from the Last Hour"))
   })
+ 
+  
+  
+  # I N F O B O X   O U T P U T - V A L
+  output$top.coin <- renderInfoBox({
+    infoBox(
+      "Gain in Last Hour",
+      paste0(get.infoBox(), "%"),
+      icon = icon("signal"),
+      color = "purple",
+      fill = TRUE)
+  })
+   
+  
+  # I N F O B O X   O U T P U T - N A M E
+  output$top.name <- renderInfoBox({
+    infoBox(
+      "Coin Name",
+      get.infobox.coin(),
+      icon = icon("bitcoin"),
+      color = "purple",
+      fill = TRUE)
+  })
   
 }
-# Return a Shiny app object
-shinyApp(ui = ui, server = server)
 
+#####################
+#### D E P L O Y ####
+#####################
+
+# Return a Shiny app objectshinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server)
 
