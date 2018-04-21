@@ -22,7 +22,7 @@ get.data <- function(x){
   bra
 }
 
-get.infoBox.val <- function(x){
+get.infobox.val <- function(x){
   
   df1 <- get.data()
   df1 <- df1$`% 1h`[1]
@@ -54,7 +54,7 @@ ui <- dashboardPage(
   dashboardSidebar(
     
     h5("A slightly interactive dashboard that pulls the top gainers from the last hour from
-       coinmarketcap.com"),
+       coinmarketcap.com. Refreshes every 60 seconds."),
     
     br(),
     br(),
@@ -101,7 +101,7 @@ ui <- dashboardPage(
         headerPanel("Data Table"),
         solidHeader = T,
         br(),
-        DT::dataTableOutput("table", height = "400px"),
+        DT::dataTableOutput("table", height = "350px"),
         width = 6,
         height = "560px"
       ),
@@ -140,6 +140,17 @@ server <- function(input, output) {
   })
   
   
+  live.infobox.val <- reactive({
+    invalidateLater(60000)    # refresh the report every 60k milliseconds (60 seconds)
+    get.infobox.val()                # call our function from above
+  })
+  
+  
+  live.infobox.coin <- reactive({
+    invalidateLater(60000)    # refresh the report every 60k milliseconds (60 seconds)
+    get.infobox.coin()                # call our function from above
+  })
+  
   # D A T A   T A B L E   O U T P U T
   output$table <- DT::renderDataTable(DT::datatable({
     data <- liveish_data()}))
@@ -147,7 +158,7 @@ server <- function(input, output) {
   
   # P L O T   O U T P U T
   output$plot <- renderPlot({ (ggplot(data=liveish_data(), aes(x=Symbol, y=`% 1h`)) +
-                                 geom_bar(stat="identity") +
+                                 geom_bar(stat="identity", fill = "springgreen3") +
                                  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
                                  ggtitle("Gainers from the Last Hour"))
   })
@@ -158,7 +169,7 @@ server <- function(input, output) {
   output$top.coin <- renderInfoBox({
     infoBox(
       "Gain in Last Hour",
-      paste0(get.infoBox.val(), "%"),
+      paste0(live.infobox.val(), "%"),
       icon = icon("signal"),
       color = "purple",
       fill = TRUE)
@@ -169,7 +180,7 @@ server <- function(input, output) {
   output$top.name <- renderInfoBox({
     infoBox(
       "Coin Name",
-      get.infobox.coin(),
+      live.infobox.coin(),
       icon = icon("bitcoin"),
       color = "purple",
       fill = TRUE)
