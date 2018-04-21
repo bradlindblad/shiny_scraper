@@ -5,8 +5,8 @@ account: bradleylindblad
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 326555
-bundleId: 1328689
+bundleId: 1331007
 url: https://bradleylindblad.shinyapps.io/gainer/
-when: 1524193837.70496
+when: 1524328449.32164
 asMultiple: FALSE
 asStatic: FALSE
