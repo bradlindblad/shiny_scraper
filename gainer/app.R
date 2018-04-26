@@ -9,32 +9,33 @@ library(rvest)
 
 get.data <- function(x){
 
-  urlz <- read_html("https://coinmarketcap.com/gainers-losers/")
-  urlz <- html_table(urlz)
+  myurl <- read_html("https://coinmarketcap.com/gainers-losers/") # read our webpage as html
+  myurl <- html_table(myurl)  # convert to an html table for ease of use
   
   
-  bra <- urlz[[1]]
-  bra$`% 1h` <- gsub("%","",bra$`% 1h`)
-  bra$`% 1h`<- as.numeric(bra$`% 1h`)
-  bra$Symbol <- as.factor(bra$Symbol)
+  to.parse <- myurl[[1]]  # pull the first item in the list
+  to.parse$`% 1h` <- gsub("%","",to.parse$`% 1h`) # cleanup - remove non-characters
+  to.parse$`% 1h`<- as.numeric(to.parse$`% 1h`) #cleanup - convert percentages column to numeric
+  to.parse$Symbol <- as.factor(to.parse$Symbol) # cleanup - convert coin symbol to factor
   
-  bra$Symbol <- factor(bra$Symbol, levels = bra$Symbol[order(bra$'% 1h')])
-  bra
+  to.parse$Symbol <- factor(to.parse$Symbol,
+                            levels = to.parse$Symbol[order(to.parse$'% 1h')])  # sort by gain value
+  to.parse  # return the finished data.frame
 }
 
 get.infobox.val <- function(x){
   
-  df1 <- get.data()
-  df1 <- df1$`% 1h`[1]
-  df1
+  df1 <- get.data() # run the scraping function above and assign that data.frame to a variable
+  df1 <- df1$`% 1h`[1]  # assign the first value of the % gain column to same variable
+  df1   # return value
   
 }
 
 get.infobox.coin <- function(x){
   
-  df <- get.data()
-  df <- df$Name[1]
-  df
+  df <- get.data()  # run the scraping function above and assign that data.frame to a variable
+  df <- df$Name[1]  # assign the first value of the name column to same variable
+  df   # return value
   
 }
 
